@@ -11,7 +11,7 @@ const getSome = async ({
     ] = await pool_db.query(
       `
         Select *
-        From peoples
+        From people
         Where nickName = ?
         `,
       [nickName],
