@@ -83,7 +83,7 @@ if (process.env.NODE_ENV === 'development') {
     env: process.env,
   })
 
-  https.createServer(sslOptions, app).listen(process.env.PORT || 3000, () => {
+  https.createServer(sslOptions, app).listen(process.env.PORT, 'picture.grezersfirstmain.icu' || 3000, () => {
     console.log(`Listening on ${process.env.PORT}`)
   })
 }
