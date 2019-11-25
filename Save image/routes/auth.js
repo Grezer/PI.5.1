@@ -5,23 +5,18 @@ const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 
 router.post('/register', async (req, res) => {
-  const {
-    login,
-    password,
-    nickName,
-    role
-  } = req.body
+  const { login, password, nickName, role } = req.body
   const promisePool = pool.promise()
 
   const findLogin = 'Select * FROM people Where login = ?'
   const loginExist = await promisePool.query(findLogin, login)
-  if (loginExist[0].length != 0) return res.status(400).send('Login already exist')
+  if (loginExist[0].length != 0)
+    return res.status(400).send('Login already exist')
 
   //const salt = bcrypt.genSaltSync(10);
   //const hashPassword = await bcrypt.hash(req.body.password, salt);
 
   const hash = await bcrypt.hash(password, 10)
-
 
   // Store hash in database
   const people = {
@@ -31,7 +26,8 @@ router.post('/register', async (req, res) => {
     role
   }
 
-  const sql = 'INSERT INTO people (nickName, login, passwordHash, role) VALUES (?,?,?,?)'
+  const sql =
+    'INSERT INTO people (nickName, login, passwordHash, role) VALUES (?,?,?,?)'
 
   try {
     const result = await promisePool.query(sql, Object.values(people))
@@ -44,20 +40,25 @@ router.post('/register', async (req, res) => {
 })
 
 router.post('/login', async (req, res) => {
-  const hash = '$2a$10$MZVZpD/aJrDLOwjVt4MTt.L32dd0Wg52XMBlk2E2u7.S6YGoDIb.e'
-  const res2 = await bcrypt.compare(req.body.password, hash)
+  //const hash = '$2a$10$MZVZpD/aJrDLOwjVt4MTt.L32dd0Wg52XMBlk2E2u7.S6YGoDIb.e'
+  //const res2 = await bcrypt.compare(req.body.password, hash)
 
   const promisePool = pool.promise()
   const findLogin = 'Select * FROM people Where login = ?'
   const [loginExist] = await promisePool.query(findLogin, req.body.login)
 
-  if (loginExist.length == 0) return res.status(400).send('Login or password is wrong')
+  if (loginExist.length == 0)
+    return res.status(400).send('Login or password is wrong')
 
-  const validPass = await bcrypt.compare(req.body.password, loginExist[0].passwordHash)
+  const validPass = await bcrypt.compare(
+    req.body.password,
+    loginExist[0].passwordHash
+  )
 
-  if (validPass) return res.status(400).send('Login or password is wrong')
+  if (!validPass) return res.status(400).send('Login or password is wrong')
 
-  const token = jwt.sign({
+  const token = jwt.sign(
+    {
       id: loginExist[0].id,
       role: loginExist[0].role
     },
