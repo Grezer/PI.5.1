@@ -16,28 +16,44 @@ router.post('/upload/:text', verify, function(req, res, next) {
     const newName = result[0].id
     if (error) return res.status(400).send(error)
 
-    dir = `./files`
+    dir = `./files/`
     form.keepExtensions = true
     fse.ensureDir(dir, err => {
       // console.log(err);
     })
     form.uploadDir = dir
     let path
+    let filePath
 
     form
       .parse(req)
       // переименовывание файла (без генерации уникального имени)
-      .on('fileBegin', function(name, file) {
+      .on('fileBegin', async function(name, file) {
+        path = form.uploadDir + file.name
+        file.path = path
         console.log('hash')
 
-        imghash.hash('./files/123.jpg').then(hash => {
-          console.log(hash) // 'f884c4d8d1193c07'
+        const hash1 = imghash.hash('./files/345.jpg')
+        const hash2 = imghash.hash('./files/123.jpg')
+        await Promise.all([hash1, hash2]).then(results => {
+          const dist = leven(results[0], results[1])
+          console.log(`Distance between images is: ${dist}`)
+          if (dist <= 12) {
+            console.log('Images are similar')
+          } else {
+            console.log('Images are NOT similar')
+          }
         })
-
-        path = form.uploadDir + '/' + file.name
-        file.path = path
       })
       .on('file', function(name, file) {
+        //var fileName = curTime + '__' + file.name
+        var fileName = 'asd'
+        fse.rename(file.path, form.uploadDir + fileName, function(err) {
+          if (!err) {
+            return res.send(fileName)
+          }
+        })
+
         files[name] = file
       })
       .on('field', function(name, field) {
@@ -53,12 +69,7 @@ router.post('/upload/:text', verify, function(req, res, next) {
           }
           con.query(
             'Insert into posts (pictureLink, text, postedTime, idPeople) values (?,?,?,?)',
-            [
-              path,
-              req.params.text,
-              moment().format('YYYY-MM-DD HH:mm:ss'),
-              req.user.id
-            ],
+            [path, req.params.text, moment().format('YYYY-MM-DD HH:mm:ss'), req.user.id],
             function(error, result) {
               if (error) {
                 return res.status(406).send(error)
@@ -69,6 +80,9 @@ router.post('/upload/:text', verify, function(req, res, next) {
           )
         })
       })
+    //fse.rename(renamePath, form.uploadDir + "/" + "asdasdf", (err) => {
+
+    //});
   })
 })
 
