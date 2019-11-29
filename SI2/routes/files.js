@@ -33,7 +33,15 @@ router.post('/upload/:text', (req, res) => {
         file.name = newName + '.jpg'
         path = form.uploadDir + file.name
         file.path = path
-        getOneHash(path);
+        try{
+          let a = await getOneHash(path);
+          console.log('a: ', a);
+
+        } catch(e){
+          console.log(e)
+        }
+        let b = 4
+
         //console.log('getOneHash(path): ', a)
       })
       .on('file', function(name, file) {

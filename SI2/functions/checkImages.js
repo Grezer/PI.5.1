@@ -11,12 +11,9 @@ const leven = require('leven')
   //foreach arrayOfHash get leven
 //}
 
-function getOneHash(path) {
-    const hash1 = imghash.hash(path); 
-    Promise(hash1, hash2)
-    .then((results) => {
-        console.log(results[0])        
-    });
+async function getOneHash(path) {
+  const hash = await imghash.hash(path)
+  return hash
 }
 
 
